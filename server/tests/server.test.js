@@ -12,7 +12,9 @@ const todos = [
     },
     {
         _id: new ObjectID(),
-        text: 'Auto insert text'
+        text: 'Auto insert text',
+        completed: true,
+        completedAt: 1234
     }
 ];
 
@@ -146,3 +148,38 @@ describe ('DELETE /todos:id', () => {
             .end(done);
     });
 });
+
+describe('PATH /todos/:id', () => {
+    it('should update the todo', (done) => {
+        var hexId = todos[0]._id.toHexString();
+        var text = 'Changed the description';
+        var completed = true;
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send({text, completed})
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBe(true);
+                expect(typeof res.body.todo.completedAt).toBe('number');
+            })
+            .end(done);
+    });
+
+    it('should clear completedAt when todo is not completed', (done) => {
+        var hexId = todos[1]._id.toHexString();
+        var text = 'Changed the description';
+        var completed = false;
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send({text, completed})
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBe(completed);
+                expect(res.body.todo.completedAt).toBeNull();
+            })
+            .end(done);
+
+    });
+})
